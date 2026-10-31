@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>CFBundleExecutable</key><string>speechd</string>
+  <key>CFBundleIdentifier</key><string>local.homeview.speech</string>
+  <key>CFBundleName</key><string>HomeView Speech</string>
+  <key>CFBundlePackageType</key><string>APPL</string>
+  <key>CFBundleShortVersionString</key><string>1.0</string>
+  <key>CFBundleVersion</key><string>1</string>
+  <key>LSMinimumSystemVersion</key><string>13.0</string>
+  <key>LSUIElement</key><true/>
+  <key>NSSpeechRecognitionUsageDescription</key><string>HomeView recognizes the wake word and your commands in the iMac's microphone audio, on this Mac.</string>
+  <key>NSMicrophoneUsageDescription</key><string>Audio comes from the iMac over the network; this Mac's microphone is not used.</string>
+</dict></plist>

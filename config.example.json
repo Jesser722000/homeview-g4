@@ -1,0 +1,43 @@
+{
+  "_readme": "Copy this file to config.json and edit it. config.json is git-ignored. See README.md for what each setting does.",
+
+  "ports": { "dashboard": 8878, "voice": 8879, "relay": 8090, "speech": 8880, "chrome_devtools": 9333 },
+  "relay_bind": "0.0.0.0",
+  "relay_allowed_networks": ["169.254.0.0/16", "127.0.0.0/8"],
+
+  "location": { "name": "Cupertino", "latitude": 37.3230, "longitude": -122.0322, "timezone": "auto", "units": "fahrenheit" },
+  "owner_name": "",
+
+  "assistant": {
+    "name": "Muse",
+    "wake_word": "Hey Apple",
+    "wake_names": ["apple"],
+    "openai_model": "",
+    "openai_voice": "marin",
+    "mac_voice": ""
+  },
+  "openai_api_key": "",
+
+  "photos_dir": "",
+  "countdown": { "label": "", "date": "" },
+  "night": { "start": 23, "end": 7 },
+
+  "spotify": { "enabled": true },
+  "demo": { "song_uri": "", "song_name": "" },
+
+  "home_assistant": {
+    "url": "",
+    "token": "",
+    "devices": [
+      { "entity_id": "light.living_room_lamp", "name": "Lamp", "room": "Living Room" },
+      { "entity_id": "scene.movie_time", "name": "Movie", "room": "Living Room" }
+    ],
+    "doorbell_event": "",
+    "doorbell_camera": "",
+    "announce_tts": "",
+    "announce_players": []
+  },
+
+  "calendar_helper": true,
+  "touch": { "enabled": false }
+}

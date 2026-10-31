@@ -1,0 +1,25 @@
+# Your settings and secrets
+config.json
+*.env
+.env
+.env.*
+
+# Generated at runtime
+out/
+data/
+voice/out/
+.chrome-*/
+__pycache__/
+*.pyc
+*.log
+
+# Build products
+helpers/build/
+g4-viewer/classes/
+g4-viewer/*.jar
+g4-viewer/server.txt
+
+# Backups and macOS clutter
+*.v[0-9]*.*
+*.bak
+.DS_Store

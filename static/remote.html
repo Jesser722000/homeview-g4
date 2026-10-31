@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HomeView Remote</title>
+<style>
+  :root { --bg: #f2f2f7; --card: #fff; --ink: #1c1c1e; --sub: #6e6e73; --line: #e5e5ea; --accent: #0a84ff; --on: #34c759; --warn: #ff3b30; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #000; --card: #1c1c1e; --ink: #f5f5f7; --sub: #98989f; --line: #2c2c2e; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 20px 16px 48px; display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  @media (max-width: 860px) { .wrap { grid-template-columns: 1fr; } }
+  header { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  h1 { font-size: 28px; margin: 0; letter-spacing: -.02em; }
+  .status { color: var(--sub); font-size: 14px; }
+  .card { background: var(--card); border-radius: 16px; padding: 16px; }
+  .card h2 { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; color: var(--sub); margin: 0 0 12px; }
+  .col { display: grid; gap: 16px; }
+  .screen { width: 100%; aspect-ratio: 4 / 3; border-radius: 12px; background: #111; display: block; object-fit: cover; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; }
+  button { font: inherit; border: 0; border-radius: 10px; padding: 9px 14px; background: var(--bg); color: var(--ink); cursor: pointer; }
+  button:hover { filter: brightness(.96); }
+  button.on { background: var(--accent); color: #fff; }
+  button.big { padding: 14px 16px; font-weight: 600; flex: 1 1 140px; text-align: left; }
+  button.big small { display: block; font-weight: 400; color: var(--sub); margin-top: 2px; }
+  button.big.on small { color: rgba(255,255,255,.85); }
+  button.stop { color: var(--warn); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+  .thumb { position: relative; aspect-ratio: 4 / 3; border-radius: 10px; overflow: hidden; background: var(--bg) center / cover no-repeat; border: 3px solid transparent; cursor: pointer; padding: 0; }
+  .thumb.on { border-color: var(--accent); }
+  .swatch { width: 44px; height: 44px; border-radius: 50%; border: 3px solid transparent; padding: 0; }
+  .swatch.on { border-color: var(--accent); }
+  .swlabel { font-size: 12px; color: var(--sub); text-align: center; margin-top: 4px; }
+  .sw { display: flex; flex-direction: column; align-items: center; width: 60px; }
+  form { display: flex; gap: 8px; }
+  input[type=text] { flex: 1; font: inherit; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--ink); min-width: 0; }
+  .hint { color: var(--sub); font-size: 13px; margin: 8px 0 0; }
+  .toast { position: fixed; left: 50%; bottom: 20px; transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.show { opacity: .92; }
+  details summary { cursor: pointer; color: var(--sub); font-size: 14px; margin-top: 10px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>HomeView Remote</h1>
+    <div class="status" id="status">Connecting…</div>
+  </header>
+
+  <div class="col">
+    <div class="card">
+      <h2>On the iMac now</h2>
+      <img class="screen" id="shot" alt="Current iMac screen">
+    </div>
+    <div class="card">
+      <h2>Say it</h2>
+      <form id="sayform">
+        <input type="text" id="say" placeholder="Type what you'd say after the wake word…" autocomplete="off">
+        <button class="on" type="submit">Send</button>
+      </form>
+      <p class="hint">Runs exactly as if you said it. These script lines turn on the scripted demo so they answer instantly:</p>
+      <div class="row" id="lines" style="margin-top:8px"></div>
+    </div>
+  </div>
+
+  <div class="col">
+    <div class="card">
+      <h2>Demo modes</h2>
+      <div class="row">
+        <button class="big" data-demo="free">Demo info<small>Everything works, demo info everywhere</small></button>
+        <button class="big" data-demo="talk">Scripted demo<small>Your script lines answer perfectly</small></button>
+        <button class="big" data-demo="broll">B-roll<small>Slow loop, about 2½ min, no pop-ups</small></button>
+        <button class="big" data-demo="tour">45-second tour<small>Everything, fast</small></button>
+        <button class="big stop" data-demo="stop">Stop demo<small>Back to your real screen</small></button>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Screens</h2>
+      <div class="row" id="faces"></div>
+    </div>
+    <div class="card">
+      <h2>Home background</h2>
+      <div class="row" id="walls"></div>
+    </div>
+    <div class="card">
+      <h2>Photo</h2>
+      <div class="row" style="margin-bottom:10px"><button id="photoauto">Rotate automatically</button></div>
+      <div class="grid" id="demophotos"></div>
+      <details><summary>Your photos</summary><div class="grid" id="realphotos" style="margin-top:10px"></div></details>
+    </div>
+    <div class="card">
+      <h2>OpenAI</h2>
+      <p class="hint" id="keystatus" style="margin:0 0 10px">Checking…</p>
+      <form id="keyform">
+        <input type="password" id="key" placeholder="Paste your OpenAI API key (sk-…)" autocomplete="off">
+        <button class="on" type="submit">Save</button>
+      </form>
+      <p class="hint">Optional. Saved only on this Mac (openai_key_file in config.json, ~/.config/homeview/openai.env by default). Questions and the spoken voice switch to OpenAI right away.</p>
+    </div>
+    <div class="card">
+      <h2>Music and extras</h2>
+      <div class="row">
+        <button data-get="/music?cmd=previous">⏮ Back</button>
+        <button data-get="/music?cmd=toggle">⏯ Play / pause</button>
+        <button data-get="/music?cmd=next">⏭ Next</button>
+        <button data-get="/door?test=1">Ring the doorbell</button>
+        <button data-say="cancel the timer">Cancel timers</button>
+        <button data-get="/touch-cal">Calibrate touch</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+  var FACES = [['modular', 'Home'], ['weather', 'Weather'], ['calendar', 'Calendar'], ['nowplaying', 'Now Playing'], ['lyrics', 'Lyrics'],
+               ['flow', 'Flow clock'], ['photo', 'Photo'], ['apps', 'Apps'], ['grid', 'Lights'], ['cameras', 'Cameras'], ['night', 'Night']];
+  var WALL_COLORS = { auto: 'conic-gradient(#3c6b4f 0 50%, #a52a2a 0)', green: '#46735a', red: '#a52a2a', blue: '#2f5c86', purple: '#5a3f86',
+                      gold: '#9a7a2c', graphite: '#55585c', photo: 'linear-gradient(135deg, #f0a35e, #6aa7d8)' };
+  var WALL_NAMES = { auto: 'Auto', green: 'Green', red: 'Red', blue: 'Blue', purple: 'Purple', gold: 'Gold', graphite: 'Graphite', photo: 'Photo' };
+  var LINES = ['Tell me about the Golden Gate Bridge', 'Go home', "What's the weather?", 'Play the demo song', 'Start a timer for 36 minutes for my banana bread',
+               'Show me a banana bread recipe', 'Next step', 'Show the lyrics'];
+  var S = {};
+  function $(id) { return document.getElementById(id); }
+  function toast(t) { var e = $('toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { e.classList.remove('show'); }, 1600); }
+  function get(url) { return fetch(url).then(function (r) { return r.json(); }).catch(function () { return {}; }); }
+  function set(q, msg) {
+    return get('/remote/set?' + new URLSearchParams(q)).then(function (r) {
+      if (r.state) { S = r.state; draw(); }
+      toast(r.ok === false ? (r.error || 'That did not work') : msg || 'Done');
+      setTimeout(refreshShot, 700);
+    });
+  }
+  function btn(label, cls, onclick) { var b = document.createElement('button'); b.textContent = label; if (cls) b.className = cls; b.onclick = onclick; return b; }
+  function draw() {
+    var faces = $('faces'); faces.innerHTML = '';
+    FACES.forEach(function (f) { faces.appendChild(btn(f[1], S.face === f[0] ? 'on' : '', function () { set({ face: f[0] }, f[1]); })); });
+    var walls = $('walls'); walls.innerHTML = '';
+    (S.wallpapers || []).forEach(function (w) {
+      var d = document.createElement('div'); d.className = 'sw';
+      var b = btn('', 'swatch' + (S.wallpaper === w ? ' on' : ''), function () { set({ wallpaper: w, face: 'modular' }, WALL_NAMES[w] + ' background'); });
+      b.style.background = WALL_COLORS[w]; b.title = WALL_NAMES[w];
+      d.appendChild(b); var l = document.createElement('div'); l.className = 'swlabel'; l.textContent = WALL_NAMES[w]; d.appendChild(l); walls.appendChild(d);
+    });
+    function thumbs(el, list) {
+      if (el.dataset.n == list.length && el.dataset.pin == String(S.photo_pin)) return;
+      el.dataset.n = list.length; el.dataset.pin = String(S.photo_pin); el.innerHTML = '';
+      list.forEach(function (n) {
+        var b = btn('', 'thumb' + (S.photo_pin === n ? ' on' : ''), function () { set({ photo: n, face: 'photo' }, 'Photo pinned'); });
+        b.style.backgroundImage = 'url(/photo/' + encodeURIComponent(n) + ')'; el.appendChild(b);
+      });
+    }
+    thumbs($('demophotos'), S.demo_photos || []);
+    thumbs($('realphotos'), S.photos || []);
+    $('photoauto').className = S.photo_pin ? '' : 'on';
+    document.querySelectorAll('[data-demo]').forEach(function (b) { b.classList.toggle('on', ({ script: 'talk' }[S.demo] || S.demo) === b.dataset.demo); });
+    $('keystatus').textContent = S.openai ? 'Key saved. Answers and voice use OpenAI.' : 'No key yet: home commands, timers, weather and music work; general questions need a key.';
+    if (S.wake_word) $('say').placeholder = 'Type what you\'d say after “' + S.wake_word + '”…';
+    var st = [S.demo ? ({ script: 'Scripted demo', broll: 'B-roll', tour: 'Tour', free: 'Demo info' }[S.demo] || 'Demo') + ' on' : 'Normal mode', 'showing ' + ((FACES.filter(function (f) { return f[0] === S.face; })[0] || [0, S.face || '?'])[1])];
+    if (S.song && S.song.title) st.push((S.song.state === 'playing' ? '▶ ' : '❚❚ ') + S.song.title + ' · ' + S.song.artist);
+    $('status').textContent = st.join('  ·  ');
+  }
+  function refreshShot() { $('shot').src = '/remote/shot.jpg?t=' + Date.now(); }
+  function poll() { get('/remote/state').then(function (s) { if (s && s.face) { S = s; draw(); } }); }
+  document.querySelectorAll('[data-demo]').forEach(function (b) {
+    b.onclick = function () { set({ demo: b.dataset.demo }, b.textContent.split(/\n/)[0]); };
+  });
+  document.querySelectorAll('[data-get]').forEach(function (b) { b.onclick = function () { get(b.dataset.get).then(function () { toast('Sent'); setTimeout(refreshShot, 700); }); }; });
+  document.querySelectorAll('[data-say]').forEach(function (b) { b.onclick = function () { set({ say: b.dataset.say }, 'Sent'); }; });
+  $('photoauto').onclick = function () { set({ photo: 'none' }, 'Photos rotate again'); };
+  LINES.forEach(function (l) { $('lines').appendChild(btn(l, '', function () {
+    if (S.demo === 'script' || S.demo === 'free') { set({ say: l }, '“' + l + '”'); return; }
+    set({ demo: 'talk' }, 'Scripted demo on');             // script lines answer instantly only in the scripted demo
+    setTimeout(function () { set({ say: l }, '“' + l + '”'); }, 2300);
+  })); });
+  $('keyform').onsubmit = function (e) {
+    e.preventDefault(); var k = $('key').value.trim(); if (!k) return;
+    fetch('/remote/key', { method: 'POST', body: k }).then(function (r) { return r.json(); }).then(function (r) {
+      $('key').value = ''; toast(r.ok ? 'Key saved' : r.error); poll();
+    }).catch(function () { toast('Could not save the key'); });
+  };
+  $('sayform').onsubmit = function (e) { e.preventDefault(); var t = $('say').value.trim(); if (!t) return; set({ say: t }, '“' + t + '”'); $('say').value = ''; };
+  poll(); refreshShot();
+  setInterval(poll, 2000); setInterval(refreshShot, 1000);
+</script>
+</body>
+</html>
